@@ -39,26 +39,26 @@ int BS1 = 9;//Adelante der
 //d -> derecha        b - > trasera
 
 //Pines canales encoders
-int canalAdf = 37;
-int canalBdf = 39;
-int canalAif = 41;
-int canalBif = 43;
-int canalAdb = 45;
-int canalBdb = 47;
-int canalAib = 49;
-int canalBib = 51;
+int canalAdf = 39;
+int canalBdf = 41;
+int canalAif = 43;
+int canalBif = 45;
+int canalAdb = 47;
+int canalBdb = 49;
+int canalAib = 51;
+int canalBib = 53;
 
 //Definición de pines Dirección Brushless
-int pinDirFR = 36;//Motor 1
-int pinDirFL = 32;//Motor 2
-int pinDirBL = 28;//Motor 3
-int pinDirBR = 24;//Motor 4
+int pinDirFR = 35;//A1 Motor 1
+int pinDirFL = 31;//A3 Motor 2
+int pinDirBL = 27;//A5 Motor 3
+int pinDirBR = 23;//A7 Motor 4
 
 //Definición de pines Break Brushless
-int pinBreakFR = 34;//Motor 1
-int pinBreakFL = 30;//Motor 2
-int pinBreakBL = 26;//Motor 3
-int pinBreakBR = 22;//Motor 4
+int pinBreakFR = 37;//A0 Motor 1
+int pinBreakFL = 33;//A2 Motor 2
+int pinBreakBL = 29;//A4 Motor 3
+int pinBreakBR = 25; //A6 Motor 4
 
 //Definición de pines para servos Pan-Tilt
 int servoH = 10;//PAN
@@ -73,11 +73,26 @@ int pwmValue = 0;
 int AngleValue = 0;
 int AngleValueB = 0;
 
-//Definición 0° dirección servos
+//Definición 90° dirección servos
 int AngleValueBS4 = 1680;
 int AngleValueBS3 = 1470;
 int AngleValueBS2 = 1700;
 int AngleValueBS1 = 1550;
+
+//Set 0° y 180°
+int AngleMinBS4 = 1200;
+int AngleMaxBS4 = 1750;
+int AngleMinBS3 = 1310;
+int AngleMaxBS3 = 2000;
+int AngleMinBS2 = 1360;
+int AngleMaxBS2 = 2000;
+int AngleMinBS1 = 1230;
+int AngleMaxBS1 = 1830;
+
+double theta1 = 180 / (AngleMaxBS1 - AngleMinBS1);
+double theta2 = 180 / (AngleMaxBS2 - AngleMinBS2);
+double theta3 = 180 / (AngleMaxBS3 - AngleMinBS3);
+double theta4 = 180 / (AngleMaxBS4 - AngleMinBS4);
 
 int desiredAngleValue = 0;
 int desiredAngleValueB = 0;
@@ -226,10 +241,10 @@ void loop() {
     pos_actualib = pulsosib * paso;
 
     //velocidad rpm
-    vel_rpmdf = ((pos_actualdf - pos_antdf)*60.00) / (360*(dt) / 1000000.00); // rpm
-    vel_rpmif = ((pos_actualif - pos_antif)*60.00) / (360*(dt) / 1000000.00); // rpm
-    vel_rpmdb = ((pos_actualdb - pos_antdb)*60.00) / (360*(dt) / 1000000.00); // rpm
-    vel_rpmib = ((pos_actualib - pos_antib)*60.00) / (360*(dt) / 1000000.00); // rpm
+    vel_rpmdf = ((pos_actualdf - pos_antdf) * 60.00) / (360 * (dt) / 1000000.00); // rpm
+    vel_rpmif = ((pos_actualif - pos_antif) * 60.00) / (360 * (dt) / 1000000.00); // rpm
+    vel_rpmdb = ((pos_actualdb - pos_antdb) * 60.00) / (360 * (dt) / 1000000.00); // rpm
+    vel_rpmib = ((pos_actualib - pos_antib) * 60.00) / (360 * (dt) / 1000000.00); // rpm
 
     //velocidad en m/s
     veldf = vel_rpmdf * pi * d_r / 60; //m/s
@@ -239,21 +254,21 @@ void loop() {
 
     //Va = (veldf + velif + veldb + velib) / 4;
 
-    //Conversión ángulos
-    AngleValueBS1_new = (0.18*AngleValueBS1)-180;
-    AngleValueBS2_new = (0.18*AngleValueBS2)-180;
-    AngleValueBS3_new = (0.18*AngleValueBS3)-180;
-    AngleValueBS4_new = (0.18*AngleValueBS4)-180;
+    //Escalamiento ángulos
+    AngleValueBS1_new = (theta1 * AngleValueBS1) - (theta1 * AngleMinBS1);
+    AngleValueBS2_new = (theta2 * AngleValueBS2) - (theta2 * AngleMinBS2);
+    AngleValueBS3_new = (theta3 * AngleValueBS3) - (theta3 * AngleMinBS3);
+    AngleValueBS4_new = (theta4 * AngleValueBS4) - (theta4 * AngleMinBS4);
 
     //Calculo velocidad lineal
-    Va = 1/4*(velif*cos(AngleValueBS1_new) + veldf*cos(AngleValueBS2_new) + veldb*cos(AngleValueBS3_new) + velib*cos(AngleValueBS4_new));//Velocidad lineal
+    Va = (velif * cos(AngleValueBS1_new) + veldf * cos(AngleValueBS2_new) + veldb * cos(AngleValueBS3_new) + velib * cos(AngleValueBS4_new)) / 4; //Velocidad lineal
 
     //Calculo velocidad angular
-    v1 = velif*(((Lf*sin(AngleValueBS1_new))-((W/2)*cos(AngleValueBS1_new)))/(pow(Lf,2)+ pow(W/2,2)));
-    v2 = veldf*(((Lf*sin(AngleValueBS2_new))+((W/2)*cos(AngleValueBS2_new)))/(pow(Lf,2)+ pow(W/2,2)));
-    v2 = veldb*(((-Lr*sin(AngleValueBS3_new))+((W/2)*cos(AngleValueBS3_new)))/(pow(Lr,2)+ pow(W/2,2)));
-    v2 = velib*(((-Lr*sin(AngleValueBS4_new))-((W/2)*cos(AngleValueBS4_new)))/(pow(Lr,2)+ pow(W/2,2)));
-    wa = 1/4 * (v1 + v2 + v3 + v4); //Velocidad angular
+    v1 = velif * (((Lf * sin(AngleValueBS1_new)) - ((W / 2) * cos(AngleValueBS1_new))) / (pow(Lf, 2) + pow(W / 2, 2)));
+    v2 = veldf * (((Lf * sin(AngleValueBS2_new)) + ((W / 2) * cos(AngleValueBS2_new))) / (pow(Lf, 2) + pow(W / 2, 2)));
+    v3 = veldb * (((-Lr * sin(AngleValueBS3_new)) + ((W / 2) * cos(AngleValueBS3_new))) / (pow(Lr, 2) + pow(W / 2, 2)));
+    v4 = velib * (((-Lr * sin(AngleValueBS4_new)) - ((W / 2) * cos(AngleValueBS4_new))) / (pow(Lr, 2) + pow(W / 2, 2)));
+    wa = (v1 + v2 + v3 + v4) / 4; //Velocidad angular
 
     //Serial.println(vel_rpm);
 
@@ -282,10 +297,10 @@ void loop() {
     desiredAngleValue_reverse = map(ch5Value, -10, -100, 90, 0);
     desiredAngleValueB = map(ch3Value, 10, 100, 90, 120); //Izq3
     desiredAngleValueB_reverse = map(ch3Value, -10, -100, 90, 0);//90, 45
-    desiredBS4Angle = map(ch4Value, -100, 100, 1200, 1750);//2
-    desiredBS3Angle = map(ch4Value, -100, 100, 1310, 2000);
-    desiredBS2Angle = map(ch4Value, -100, 100, 1360, 2000);//1290,1845 //1380,1935+40
-    desiredBS1Angle = map(ch4Value, -100, 100, 1230, 1830);//1270,1815 //1325,1870-20
+    desiredBS4Angle = map(ch4Value, -100, 100, AngleMinBS4, AngleMaxBS4);//1200 --> 0° , 1750 --> 180°
+    desiredBS3Angle = map(ch4Value, -100, 100, AngleMinBS3, AngleMaxBS3);//1310 --> 0° , 2000 --> 180°
+    desiredBS2Angle = map(ch4Value, -100, 100, AngleMinBS2, AngleMaxBS2);//1360 --> 0° , 2000 --> 180°
+    desiredBS1Angle = map(ch4Value, -100, 100, AngleMinBS1, AngleMaxBS1);//1230 --> 0° , 1830 --> 180°
 
     AngleValueBS4 = 1670;//Atrás der
     myservoBS4.writeMicroseconds(AngleValueBS4);
