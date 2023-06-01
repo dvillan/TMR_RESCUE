@@ -71,27 +71,46 @@ void setup() {
 void loop() {
   ch4Value = readChannel(CH4, -100, 100, 0);//Derecha vertical
 
-  desiredBS4Angle = map(ch4Value, -100, 100, 1500, 1900);//1500 --> 0° , 1900 --> 180°, 1680 --> 90°
-  desiredBS3Angle = map(ch4Value, -100, 100, 1400, 1775);//1400 --> 0° , 1775 --> 180°, 1550 --> 90°
-  desiredBS2Angle = map(ch4Value, -100, 100, 1300, 1700);//1300 --> 0° , 1700 --> 180°, 1475 --> 90°
-  desiredBS1Angle = map(ch4Value, -100, 100, 1500, 1850);//1500 --> 0° , 1850 --> 180°, 1675 --> 90°
+  desiredBS4Angle = map(ch4Value, -100, 100, 1500, 1900);//1200 --> 0° , 1750 --> 180°, 1680 --> 90°
+  desiredBS3Angle = map(ch4Value, -100, 100, 1400, 1775);//1310 --> 0° , 2000 --> 180°, 1550 --> 90°
+  desiredBS2Angle = map(ch4Value, -100, 100, 1135, 1735);//1300 --> 0° , 1700 --> 180°, 1475 --> 90°
+  desiredBS1Angle = map(ch4Value, -100, 100, 1500, 1850);//1230 --> 0° , 1830 --> 180°, 1675 --> 90°
+  /*Set 90°
+    AngleValueBS4 = 1670;//Atrás der
+    myservoBS4.writeMicroseconds(AngleValueBS4);
+
+    AngleValueBS3 = 1460;//Atrás izq
+    myservoBS3.writeMicroseconds(AngleValueBS3);*/
 
   //Motor Adelante izq
   if (ch4Value > 20) {
     LeftJoystickVertical = true;
     if (AngleValueBS2 < desiredBS2Angle) {
-      AngleValueBS2 += 20;
+      if (AngleValueBS2 < 1275) {
+        AngleValueBS2 = 1275;
+      }
+      else {
+        AngleValueBS2 -= 10;
+      }
       myservoBS2.writeMicroseconds(AngleValueBS2);
-      // Serial.println(AngleValueBS2);
+      Serial.println(AngleValueBS2);
+      Serial.println(ch4Value);
       delay(10);
+
     }
   }
   else if (ch4Value < -20) {
     LeftJoystickVertical = true;
     if (AngleValueBS2 > desiredBS2Angle) {
-      AngleValueBS2 -= 20;
+      if (AngleValueBS2 > 1680) {
+        AngleValueBS2 = 1680;
+      }
+      else {
+        AngleValueBS2 += 10;
+      }
       myservoBS2.writeMicroseconds(AngleValueBS2);
-      // Serial.println(AngleValueBS2);
+      Serial.println(AngleValueBS2);
+      Serial.println(ch4Value);
       delay(10);
     }
   }
@@ -114,8 +133,13 @@ void loop() {
   //Motor Adelante der
   if (ch4Value > 20) {
     LeftJoystickVertical = true;
-    if (AngleValueBS1 < desiredBS1Angle) {
-      AngleValueBS1 += 20;
+    if (AngleValueBS1 < desiredBS2Angle) {
+      if (AngleValueBS1 < 1500) {
+        AngleValueBS1 = 1500;
+      }
+      else {
+        AngleValueBS1 -= 10;
+      }
       myservoBS1.writeMicroseconds(AngleValueBS1);
       // Serial.println(AngleValueBS1);
       delay(10);
@@ -123,8 +147,13 @@ void loop() {
   }
   else if (ch4Value < -20) {
     LeftJoystickVertical = true;
-    if (AngleValueBS1 > desiredBS1Angle) {
-      AngleValueBS1 -= 20;
+    if (AngleValueBS1 > desiredBS2Angle) {
+      if (AngleValueBS1 > 1850) {
+        AngleValueBS1 = 1850;
+      }
+      else {
+        AngleValueBS1 += 10;
+      }
       myservoBS1.writeMicroseconds(AngleValueBS1);
       // Serial.println(AngleValueBS1);
       delay(10);

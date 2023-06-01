@@ -12,16 +12,16 @@ int pwmMotorBL = 3;//7 Motor 3 //Adelante
 int pwmMotorBR = 2;//6 Motor 4 //Atrás
 
 //Definición de pines Dirección Brushless
-int pinDirFR = 37;//A1 Motor 1
-int pinDirFL = 33;//A3 Motor 2
-int pinDirBL = 29;//A5 Motor 3
-int pinDirBR = 25;//A7 Motor 4
+int pinDirFR = 35;//A1 Motor 1
+int pinDirFL = 31;//A3 Motor 2
+int pinDirBL = 27;//A5 Motor 3
+int pinDirBR = 23;//A7 Motor 4
 
 //Definición de pines Break Brushless
-int pinBreakFR = 35;//A0 Motor 1 
-int pinBreakFL = 31;//A2 Motor 2
-int pinBreakBL = 27;//A4 Motor 3
-int pinBreakBR = 23;//A6 Motor 4
+int pinBreakFR = 37;//A0 Motor 1
+int pinBreakFL = 33;//A2 Motor 2
+int pinBreakBL = 29;//A4 Motor 3
+int pinBreakBR = 25; //A6 Motor 4
 
 int Incremento = 5;
 
