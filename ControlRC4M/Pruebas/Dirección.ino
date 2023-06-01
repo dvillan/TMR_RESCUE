@@ -12,10 +12,10 @@ Servo myservoBS1;
 #define CH5 A12//A12
 
 //Definición de pines Servos Dirección
-int BS4 = 6;//2 Adelante der
-int BS3 = 7;//3 Adelante izq
-int BS2 = 8;//4 Atrás izq
-int BS1 = 9;//5 Atrás der
+int BS4 = 6;//2 Adelante izq
+int BS3 = 7;//3 Adelante der
+int BS2 = 8;//4 Atrás der
+int BS1 = 9;//5 Atrás izq
 
 int Incremento = 5;
 int deltaAngulo = 5;
@@ -39,23 +39,25 @@ bool redSwitch(byte channelInput, bool defaultValue) {
   return (ch > 50);
 }
 
+int pwmValue = 0;
 
 int AngleValueBS4 = 1680;
-int AngleValueBS3 = 1470;
-int AngleValueBS2 = 1700;
-int AngleValueBS1 = 1550;
+int AngleValueBS3 = 1550;
+int AngleValueBS2 = 1475;
+int AngleValueBS1 = 1675;
 
 int desiredBS4Angle = 0;
 int desiredBS3Angle = 0;
 int desiredBS2Angle = 0;
 int desiredBS1Angle = 0;
 
+int desiredValue = 0;
+int desiredValue_reverse = 0;
 
 bool RightJoystickHorizontal = false;
 bool RightJoystickVertical = false;
 bool LeftJoystickVertical = false;
 bool LeftJoystickHorizontal = false;
-
 
 void setup() {
   Serial.begin(115200);
@@ -63,17 +65,16 @@ void setup() {
   myservoBS3.attach(BS3, 1000, 2000);
   myservoBS2.attach(BS2, 1000, 2000);
   myservoBS1.attach(BS1, 1000, 2000);
-
   pinMode(CH4, INPUT);
 }
 
 void loop() {
   ch4Value = readChannel(CH4, -100, 100, 0);//Derecha vertical
 
-  desiredBS4Angle = map(ch4Value, -100, 100, 1200, 1750);//1200 --> 0° , 1750 --> 180°
-  desiredBS3Angle = map(ch4Value, -100, 100, 1310, 2000);//1310 --> 0° , 2000 --> 180°
-  desiredBS2Angle = map(ch4Value, -100, 100, 1360, 2000);//1360 --> 0° , 2000 --> 180°
-  desiredBS1Angle = map(ch4Value, -100, 100, 1230, 1830);//1230 --> 0° , 1830 --> 180°
+  desiredBS4Angle = map(ch4Value, -100, 100, 1500, 1900);//1500 --> 0° , 1900 --> 180°, 1680 --> 90°
+  desiredBS3Angle = map(ch4Value, -100, 100, 1400, 1775);//1400 --> 0° , 1775 --> 180°, 1550 --> 90°
+  desiredBS2Angle = map(ch4Value, -100, 100, 1300, 1700);//1300 --> 0° , 1700 --> 180°, 1475 --> 90°
+  desiredBS1Angle = map(ch4Value, -100, 100, 1500, 1850);//1500 --> 0° , 1850 --> 180°, 1675 --> 90°
 
   //Motor Adelante izq
   if (ch4Value > 20) {
@@ -96,14 +97,14 @@ void loop() {
   }
   else {
     LeftJoystickVertical = false;
-    if (AngleValueBS2 > 1700) {
+    if (AngleValueBS2 > 1475) {
       AngleValueBS2 -= 20;
     }
-    else if (AngleValueBS2 < 1700) {
+    else if (AngleValueBS2 < 1475) {
       AngleValueBS2 += 20;
     }
     else {
-      AngleValueBS2 = 1700;
+      AngleValueBS2 = 1475;
     }
     delay(10);
     myservoBS2.writeMicroseconds(AngleValueBS2);
@@ -131,14 +132,14 @@ void loop() {
   }
   else {
     LeftJoystickVertical = false;
-    if (AngleValueBS1 > 1550) {
+    if (AngleValueBS1 > 1675) {
       AngleValueBS1 -= 20;
     }
-    else if (AngleValueBS1 < 1550) {
+    else if (AngleValueBS1 < 1675) {
       AngleValueBS1 += 20;
     }
     else {
-      AngleValueBS1 = 1550;
+      AngleValueBS1 = 1675;
     }
     delay(10);
     myservoBS1.writeMicroseconds(AngleValueBS1);
@@ -167,14 +168,14 @@ void loop() {
   }
   else {
     LeftJoystickVertical = false;
-    if (AngleValueBS4 > 1700) {
+    if (AngleValueBS4 > 1680) {
       AngleValueBS4 -= 20;
     }
-    else if (AngleValueBS4 < 1700) {
+    else if (AngleValueBS4 < 1680) {
       AngleValueBS4 += 20;
     }
     else {
-      AngleValueBS4 = 1700;
+      AngleValueBS4 = 1680;
     }
     delay(10);
     myservoBS4.writeMicroseconds(AngleValueBS4);
