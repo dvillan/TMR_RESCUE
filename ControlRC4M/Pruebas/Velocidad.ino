@@ -1,9 +1,5 @@
 //Definición de pines Receptor 
-#define CH1 A8//A8
 #define CH2 A9//A9
-#define CH3 A10//A10
-#define CH4 A11//A11
-#define CH5 A12//A12
 
 //Definiciones de pines PWM Brushless
 int pwmMotorFR = 5;//9 Motor 1 //Atrás
@@ -25,8 +21,8 @@ int pinBreakBR = 25; //A6 Motor 4
 
 int Incremento = 5;
 
-int ch1Value, ch2Value, ch3Value, ch4Value, ch5Value;
-//bool ch5Value;
+int ch1Value, ch2Value, ch3Value, ch4Value;
+bool ch5Value;
 
 //Función para leer canales del control
 int readChannel(int channelInput, int minLimit, int maxLimit, int defaultValue) {
@@ -69,20 +65,12 @@ void setup() {
   pinMode(pinBreakFL, OUTPUT);
   pinMode(pinBreakBR, OUTPUT);
   pinMode(pinBreakBL, OUTPUT);
-  pinMode(CH1, INPUT);
   pinMode(CH2, INPUT);
-  pinMode(CH3, INPUT);
-  pinMode(CH4, INPUT);
-  pinMode(CH5, INPUT);
+  delay(6000);
 }
 
 void loop() {
-  ch1Value = readChannel(CH1, -100, 100, 0);
-  ch2Value = readChannel(CH2, -100, 100, -100);//Izquierda horizontal
-  ch3Value = readChannel(CH3, -100, 100, 0);//Izquierda vertical//100,-100
-  ch4Value = readChannel(CH4, -100, 100, 0);//Derecha vertical
-  //ch5Value = readChannel(CH5, -100, 100, 0);//Derecha horizontal
-  ch5Value = redSwitch(CH5, false);
+  ch2Value = readChannel(CH2, -100, 100, -100);//Derecha vertical
 
   desiredValue_reverse = map(ch2Value, 10, 100, 0, 125);
   desiredValue = map(ch2Value, -10, -100, 0, 100);
@@ -93,10 +81,10 @@ void loop() {
     digitalWrite(pinDirFR, LOW);
     digitalWrite(pinDirBL, HIGH);
     digitalWrite(pinDirBR, LOW);
-    analogWrite(pinBreakFR, LOW);
-    analogWrite(pinBreakFL, LOW);
-    analogWrite(pinBreakBR, LOW);
-    analogWrite(pinBreakBL, LOW);
+    digitalWrite(pinBreakFR, LOW);
+    digitalWrite(pinBreakFL, LOW);
+    digitalWrite(pinBreakBR, LOW);
+    digitalWrite(pinBreakBL, LOW);
     if (pwmValue < desiredValue) {
       pwmValue += Incremento;
       analogWrite(pwmMotorFL, pwmValue);
@@ -115,10 +103,10 @@ void loop() {
     digitalWrite(pinDirFR, HIGH);
     digitalWrite(pinDirBL, LOW);
     digitalWrite(pinDirBR, HIGH);
-    analogWrite(pinBreakFR, LOW);
-    analogWrite(pinBreakFL, LOW);
-    analogWrite(pinBreakBR, LOW);
-    analogWrite(pinBreakBL, LOW);
+    digitalWrite(pinBreakFR, LOW);
+    digitalWrite(pinBreakFL, LOW);
+    digitalWrite(pinBreakBR, LOW);
+    digitalWrite(pinBreakBL, LOW);
     if (pwmValue < desiredValue_reverse) {
       pwmValue += Incremento;
       analogWrite(pwmMotorFL, pwmValue);
@@ -152,10 +140,10 @@ void loop() {
       Serial.print("PWM value: ");
       Serial.println(pwmValue);
       if (pwmValue == 0) {
-        analogWrite(pinBreakFR, HIGH);
-        analogWrite(pinBreakFL, HIGH);
-        analogWrite(pinBreakBR, HIGH);
-        analogWrite(pinBreakBL, HIGH);
+        digitalWrite(pinBreakFR, HIGH);
+        digitalWrite(pinBreakFL, HIGH);
+        digitalWrite(pinBreakBR, HIGH);
+        digitalWrite(pinBreakBL, HIGH);
         Serial.println("STOPPED");
       }
     }
