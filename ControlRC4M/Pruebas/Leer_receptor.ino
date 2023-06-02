@@ -1,9 +1,9 @@
 //Definición de pines Receptor 
-#define CH1 A8//A8
-#define CH2 A9//A9
-#define CH3 A10//A10
-#define CH4 A11//A11
-#define CH5 A12//A12
+#define CH1 53//A8
+#define CH2 51//A9
+#define CH3 49//A10
+#define CH4 47//A11
+//#define CH5 A12//A12
 
 // Read the number of a given channel and convert to the range provided.
 // If the channel is off, return the default value
@@ -26,18 +26,18 @@ void setup(){
   pinMode(CH2, INPUT);
   pinMode(CH3, INPUT);
   pinMode(CH4, INPUT);
-  pinMode(CH5, INPUT);
+ // pinMode(CH5, INPUT);
 }
 
 int ch1Value, ch2Value, ch3Value, ch4Value;
-bool ch5Value;
+//bool ch5Value;
 
 void loop() {
   ch1Value = readChannel(CH1, -100, 100, 0);
   ch2Value = readChannel(CH2, -100, 100, 0);
   ch3Value = readChannel(CH3, -100, 100, -100);
   ch4Value = readChannel(CH4, -100, 100, 0);
-  ch5Value = redSwitch(CH5, false);
+ // ch5Value = redSwitch(CH5, false);
   
   Serial.print("Ch1: ");
   Serial.print(ch1Value);
@@ -47,7 +47,7 @@ void loop() {
   Serial.print(ch3Value);
   Serial.print(" Ch4: ");
   Serial.print(ch4Value);
-  Serial.print(" Ch5: ");
-  Serial.println(ch5Value);
+  //Serial.print(" Ch5: ");
+  //Serial.println(ch5Value);
   delay(500);
 }
