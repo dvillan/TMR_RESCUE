@@ -5,10 +5,10 @@ Servo myservoBS2;
 Servo myservoBS1;
 
 //Definición de pines Receptor
-#define CH1 A8//A8
-#define CH2 A9//A9
-#define CH3 A10//A10
-#define CH4 A11//A11
+#define CH1 53//A8
+#define CH2 51//A9
+#define CH3 49//A10
+#define CH4 47//A11
 #define CH5 A12//A12
 
 //Definiciones de pines PWM Brushless
@@ -34,6 +34,10 @@ int pinBreakFR = 37;//A0 Motor 1
 int pinBreakFL = 33;//A2 Motor 2
 int pinBreakBL = 29;//A4 Motor 3
 int pinBreakBR = 25; //A6 Motor 4
+/*
+  //Definición de pines para servos Pan-Tilt
+  int servoH = 10;//PAN
+  int servoV = 11;//TILT*/
 
 int Incremento = 5;
 int deltaAngulo = 5;
@@ -113,106 +117,12 @@ void loop() {
   desiredBS3Angle = map(ch4Value, -100, 100, 1400, 1775);//1310 --> 0° , 2000 --> 180°, 1550 --> 90°
   desiredBS2Angle = map(ch4Value, -100, 100, 1135, 1735);//1300 --> 0° , 1700 --> 180°, 1475 --> 90°
   desiredBS1Angle = map(ch4Value, -100, 100, 1500, 1850);//1230 --> 0° , 1830 --> 180°, 1675 --> 90°
-  /*Set 90°
-    AngleValueBS4 = 1670;//Atrás der
-    myservoBS4.writeMicroseconds(AngleValueBS4);
+  Set 90°
+  AngleValueBS2 = 1670;//Atrás der
+  myservoBS2.writeMicroseconds(AngleValueBS2);
 
-    AngleValueBS3 = 1460;//Atrás izq
-    myservoBS3.writeMicroseconds(AngleValueBS3);*/
-
-  //Motor Adelante izq
-  if (ch4Value > 20) {
-    LeftJoystickVertical = true;
-    if (AngleValueBS2 < desiredBS2Angle) {
-      if (AngleValueBS2 < 1275) {
-        AngleValueBS2 = 1275;
-      }
-      else {
-        AngleValueBS2 -= 10;
-      }
-      myservoBS2.writeMicroseconds(AngleValueBS2);
-      Serial.println(AngleValueBS2);
-      Serial.println(ch4Value);
-      delay(10);
-
-    }
-  }
-  else if (ch4Value < -20) {
-    LeftJoystickVertical = true;
-    if (AngleValueBS2 > desiredBS2Angle) {
-      if (AngleValueBS2 > 1680) {
-        AngleValueBS2 = 1680;
-      }
-      else {
-        AngleValueBS2 += 10;
-      }
-      myservoBS2.writeMicroseconds(AngleValueBS2);
-      Serial.println(AngleValueBS2);
-      Serial.println(ch4Value);
-      delay(10);
-    }
-  }
-  else {
-    LeftJoystickVertical = false;
-    if (AngleValueBS2 > 1475) {
-      AngleValueBS2 -= 20;
-    }
-    else if (AngleValueBS2 < 1475) {
-      AngleValueBS2 += 20;
-    }
-    else {
-      AngleValueBS2 = 1475;
-    }
-    delay(10);
-    myservoBS2.writeMicroseconds(AngleValueBS2);
-    //  Serial.println(AngleValueBS2);
-  }
-
-  //Motor Adelante der
-  if (ch4Value > 20) {
-    LeftJoystickVertical = true;
-    if (AngleValueBS1 < desiredBS2Angle) {
-      if (AngleValueBS1 < 1500) {
-        AngleValueBS1 = 1500;
-      }
-      else {
-        AngleValueBS1 -= 10;
-      }
-      myservoBS1.writeMicroseconds(AngleValueBS1);
-      // Serial.println(AngleValueBS1);
-      delay(10);
-    }
-  }
-  else if (ch4Value < -20) {
-    LeftJoystickVertical = true;
-    if (AngleValueBS1 > desiredBS2Angle) {
-      if (AngleValueBS1 > 1850) {
-        AngleValueBS1 = 1850;
-      }
-      else {
-        AngleValueBS1 += 10;
-      }
-      myservoBS1.writeMicroseconds(AngleValueBS1);
-      // Serial.println(AngleValueBS1);
-      delay(10);
-    }
-  }
-  else {
-    LeftJoystickVertical = false;
-    if (AngleValueBS1 > 1675) {
-      AngleValueBS1 -= 20;
-    }
-    else if (AngleValueBS1 < 1675) {
-      AngleValueBS1 += 20;
-    }
-    else {
-      AngleValueBS1 = 1675;
-    }
-    delay(10);
-    myservoBS1.writeMicroseconds(AngleValueBS1);
-    // Serial.println(AngleValueBS1);
-  }
-
+  AngleValueBS1 = 1460;//Atrás izq
+  myservoBS1.writeMicroseconds(AngleValueBS1);
 
   //Motor Atras izq
   if (ch4Value > 20) {
@@ -291,10 +201,10 @@ void loop() {
     digitalWrite(pinDirFR, LOW);
     digitalWrite(pinDirBL, HIGH);
     digitalWrite(pinDirBR, LOW);
-    digitalWrite(pinBreakFR, LOW);
-    digitalWrite(pinBreakFL, LOW);
-    digitalWrite(pinBreakBR, LOW);
-    digitalWrite(pinBreakBL, LOW);
+    analogWrite(pinBreakFR, LOW);
+    analogWrite(pinBreakFL, LOW);
+    analogWrite(pinBreakBR, LOW);
+    analogWrite(pinBreakBL, LOW);
     if (pwmValue < desiredValue) {
       pwmValue += Incremento;
       analogWrite(pwmMotorFL, pwmValue);
@@ -313,10 +223,10 @@ void loop() {
     digitalWrite(pinDirFR, HIGH);
     digitalWrite(pinDirBL, LOW);
     digitalWrite(pinDirBR, HIGH);
-    digitalWrite(pinBreakFR, LOW);
-    digitalWrite(pinBreakFL, LOW);
-    digitalWrite(pinBreakBR, LOW);
-    digitalWrite(pinBreakBL, LOW);
+    analogWrite(pinBreakFR, LOW);
+    analogWrite(pinBreakFL, LOW);
+    analogWrite(pinBreakBR, LOW);
+    analogWrite(pinBreakBL, LOW);
     if (pwmValue < desiredValue_reverse) {
       pwmValue += Incremento;
       analogWrite(pwmMotorFL, pwmValue);
@@ -350,10 +260,10 @@ void loop() {
       Serial.print("PWM value: ");
       Serial.println(pwmValue);
       if (pwmValue == 0) {
-        digitalWrite(pinBreakFR, HIGH);
-        digitalWrite(pinBreakFL, HIGH);
-        digitalWrite(pinBreakBR, HIGH);
-        digitalWrite(pinBreakBL, HIGH);
+        analogWrite(pinBreakFR, HIGH);
+        analogWrite(pinBreakFL, HIGH);
+        analogWrite(pinBreakBR, HIGH);
+        analogWrite(pinBreakBL, HIGH);
         Serial.println("STOPPED");
       }
     }
