@@ -1,13 +1,40 @@
-#include <ros.h>
-#include <geometry_msgs/Vector3Stamped.h>
-#include <geometry_msgs/Twist.h>
-#include<geometry_msgs/Vector3.h>
-#include<std_msgs/Int32.h>
+//#include <ros.h>
+//#include <geometry_msgs/Vector3Stamped.h>
+//#include <geometry_msgs/Twist.h>
+//#include<geometry_msgs/Vector3.h>
+//#include<std_msgs/Int32.h>
 
 
-geometry_msgs::Vector3 data;
-ros::Publisher pos("pos", &data);
-ros::NodeHandle nh;
+//geometry_msgs::Vector3 data;
+//ros::Publisher pos("pos",&data);
+//ros::NodeHandle nh;
+
+
+
+#include <YetAnotherPcInt.h>
+
+
+int pwmValue = 0;
+
+
+
+//Definiciones de pines PWM Brushless
+int pwmMotorFR = 5;//9 Motor 1 //Atrás -- > BR
+int pwmMotorFL = 4;//8 Motor 2 //Adelante
+int pwmMotorBL = 3;//7 Motor 3 //Adelante
+int pwmMotorBR = 2;//6 Motor 4 //Atrás --> FR
+
+//Definición de pines Dirección Brushless
+int pinDirFR = 35;//A1 Motor 1
+int pinDirFL = 31;//A3 Motor 2
+int pinDirBL = 27;//A5 Motor 3
+int pinDirBR = 23;//A7 Motor 4
+
+//Definición de pines Break Brushless
+int pinBreakFR = 37;//A0 Motor 1 Atras derecha
+int pinBreakFL = 33;//A2 Motor 2
+int pinBreakBL = 29;//A4 Motor 3
+int pinBreakBR = 25; //A6 Motor 4
 
 
 // i -> izquierda    f - > frontal
@@ -26,15 +53,15 @@ volatile int pulsosif = 0;
 volatile int pulsosdb = 0;
 volatile int pulsosib = 0;
 
-//Pines canales encoders
-int canalAdf = 37;
-int canalBdf = 39;
-int canalAif = 41;
-int canalBif = 43;
-int canalAdb = 45;
-int canalBdb = 47;
-int canalAib = 49;
-int canalBib = 51;
+//Pines canales encoders interrupciones
+#define canalAdf A11 // adelante
+#define canalBdf 43
+#define canalAif A10 //Adelante FL
+#define canalBif 39
+#define canalAdb A9 //atrás BR
+#define canalBdb 45
+#define canalAib A8 //atrás
+#define canalBib 41
 
 //Posicion actual y anterior llanta en grados
 double pos_actualdf = 0;
@@ -56,6 +83,9 @@ double veldf = 0;
 double velif = 0;
 double veldb = 0;
 double velib = 0;
+double V = 0;
+double w = 0;
+
 
 //velocidad rpm
 double vel_rpmdf = 0;
@@ -66,48 +96,76 @@ double vel_rpmib = 0;
 //Funciones de contador pulsos encoders
 void encoderdf () {
   if (digitalRead(canalAdf) == digitalRead(canalBdf))
-  { pulsosdf ++;
+  {
+    pulsosdf ++;
   }
   else
-  { pulsosdf --;
+  {
+    pulsosdf --;
   }
 }
 
 void encoderif () {
   if (digitalRead(canalAif) == digitalRead(canalBif))
-  { pulsosif ++;
+  {
+    pulsosif ++;
   }
   else
-  { pulsosif --;
+  {
+    pulsosif --;
   }
 }
 
 void encoderdb () {
   if (digitalRead(canalAdb) == digitalRead(canalBdb))
-  { pulsosdb ++;
+  {
+    pulsosdb ++;
   }
   else
-  { pulsosdb --;
+  {
+    pulsosdb --;
   }
 }
 void encoderib () {
   if (digitalRead(canalAib) == digitalRead(canalBib))
-  { pulsosib ++;
+  {
+    pulsosib --;
   }
   else
-  { pulsosib --;
+  {
+    pulsosib ++;
   }
 }
 
 void setup() {
-  //Pines de interrupcion
-  attachInterrupt(digitalPinToInterrupt(canalAdf), encoderdf, RISING);
-  attachInterrupt(digitalPinToInterrupt(canalAif), encoderif, RISING);
-  attachInterrupt(digitalPinToInterrupt(canalAdb), encoderdb, RISING);
-  attachInterrupt(digitalPinToInterrupt(canalAib), encoderib, RISING);
+  Serial.begin(115200);
 
-  nh.initNode();
-  nh.advertise(pos);
+  //Pines de interrupcion
+  pinMode(canalAdf, INPUT_PULLUP);
+  PcInt::attachInterrupt(canalAdf, encoderdf, RISING);
+  pinMode(canalAif, INPUT_PULLUP);
+  PcInt::attachInterrupt(canalAif, encoderif, RISING);
+  pinMode(canalAdb, INPUT_PULLUP);
+  PcInt::attachInterrupt(canalAdb, encoderdb, RISING);
+  pinMode(canalAib, INPUT_PULLUP);
+  PcInt::attachInterrupt(canalAib, encoderib, RISING);
+
+
+  pinMode(pwmMotorFL, OUTPUT);
+  pinMode(pwmMotorFR, OUTPUT);
+  pinMode(pwmMotorBR, OUTPUT);
+  pinMode(pwmMotorBL, OUTPUT);
+  pinMode(pinDirFL, OUTPUT);
+  pinMode(pinDirFR, OUTPUT);
+  pinMode(pinDirBL, OUTPUT);
+  pinMode(pinDirBR, OUTPUT);
+  pinMode(pinBreakFR, OUTPUT);
+  pinMode(pinBreakFL, OUTPUT);
+  pinMode(pinBreakBR, OUTPUT);
+  pinMode(pinBreakBL, OUTPUT);
+
+  //nh.initNode();
+  //nh.advertise(pos);
 
 }
 
@@ -124,10 +182,10 @@ void loop() {
     pos_actualib = pulsosib * paso;
 
     //velocidad rpm
-    vel_rpmdf = ((pos_actualdf - pos_antdf)60.00) / (360(dt) / 1000000.00); // rpm
-    vel_rpmif = ((pos_actualif - pos_antif)60.00) / (360(dt) / 1000000.00); // rpm
-    vel_rpmdb = ((pos_actualdb - pos_antdb)60.00) / (360(dt) / 1000000.00); // rpm
-    vel_rpmib = ((pos_actualib - pos_antib)60.00) / (360(dt) / 1000000.00); // rpm
+    vel_rpmdf = ((pos_actualdf - pos_antdf) * 60.00) / (360 * (dt) / 1000000.00); // rpm
+    vel_rpmif = ((pos_actualif - pos_antif) * 60.00) / (360 * (dt) / 1000000.00); // rpm
+    vel_rpmdb = ((pos_actualdb - pos_antdb) * 60.00) / (360 * (dt) / 1000000.00); // rpm
+    vel_rpmib = ((pos_actualib - pos_antib) * 60.00) / (360 * (dt) / 1000000.00); // rpm
 
     //velocidad en m/s
     veldf = vel_rpmdf * pi * d_r / 60; //m/s
@@ -136,22 +194,45 @@ void loop() {
     velib = vel_rpmib * pi * d_r / 60; //m/s
 
     V = (veldf + velif + veldb + velib) / 4;
+    w = 0;
 
-    //Serial.println(vel_rpm);
+    Serial.print(vel_rpmdf);
+    Serial.print(", ");
+    Serial.print(vel_rpmif);
+    Serial.print(", ");
+    Serial.print(vel_rpmdb);
+    Serial.print(", ");
+    Serial.println(vel_rpmib);
 
     pos_antdf = pos_actualdf;
     pos_antif = pos_actualif;
     pos_antdb = pos_actualdb;
     pos_antib = pos_actualib;
 
-    data.x = V; //velocidad lineal
-    data.y = 0; //angulo llanta derecha
-    data.z = 0; //angulo llanta izquierda
-    pos.publish(&data);
+    //data.x=V; //velocidad lineal
+    //data.y= 0; //angulo llanta derecha
+    //data.z= 0; //angulo llanta izquierda
+    //pos.publish(&data);
     t_ant = t_actual;
-    nh.spinOnce();
+    //nh.spinOnce();
 
   }
 
+  pwmValue = 80;
+
+  digitalWrite(pinDirFL, HIGH);
+  digitalWrite(pinDirFR, LOW);
+  digitalWrite(pinDirBL, HIGH);
+  digitalWrite(pinDirBR, LOW);
+  digitalWrite(pinBreakFR, LOW);
+  digitalWrite(pinBreakFL, LOW);
+  digitalWrite(pinBreakBR, LOW);
+  digitalWrite(pinBreakBL, LOW);
+
+
+  analogWrite(pwmMotorFL, pwmValue); //FL
+  analogWrite(pwmMotorFR, pwmValue); //FR --> BR
+  analogWrite(pwmMotorBL, pwmValue); //BL
+  analogWrite(pwmMotorBR, pwmValue); //BR --> FR
 
 }
