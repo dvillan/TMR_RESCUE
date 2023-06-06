@@ -70,10 +70,10 @@ double angulo1;
 double angulo2;
 void setup() {
   // put your setup code here, to run once:
-    attachInterrupt(digitalPinToInterrupt(canalAdf), encoderdf, RISING);
-    attachInterrupt(digitalPinToInterrupt(canalAif), encoderif, RISING);
-    Wire.begin(direccion);//Unimos este dispositivo al bus I2C como esclavO
-    Wire.onReceive(receiveEvent);
+  attachInterrupt(digitalPinToInterrupt(canalAdf), encoderdf, RISING);
+  attachInterrupt(digitalPinToInterrupt(canalAif), encoderif, RISING);
+  Wire.begin(direccion);//Unimos este dispositivo al bus I2C como esclavO
+  Wire.onReceive(receiveEvent);
 
   Serial.begin(9600);
 }
@@ -109,9 +109,11 @@ void loop() {
     pos_antif = pos_actualif;
 
     t_ant = t_actual;
-    Serial.print(V);
-    Serial.print(w);;
-
+    Serial.print(Va);
+    Serial.print(",");
+    Serial.print(wa);
+    Serial.print(",");
+    Serial.println(angulo1);
   }
   
  
@@ -123,7 +125,7 @@ void receiveEvent(int howMany) {
   {
     angulo1 = Wire.read();
     angulo2 = Wire.read();
-    Serial.println(angulo1);
-    Serial.println(angulo2);
+    //Serial.println(angulo1);
+    //Serial.println(angulo2);
   }
 }
