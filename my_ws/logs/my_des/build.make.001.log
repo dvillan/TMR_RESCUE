@@ -1,0 +1,4 @@
+[35m[1mScanning dependencies of target odometry[0m
+[ 50%] [32mBuilding CXX object CMakeFiles/odometry.dir/src/odometry.cpp.o[0m
+[100%] [32m[1mLinking CXX executable /home/nvidia/Downloads/my_ws/devel/.private/my_des/lib/my_des/odometry[0m
+[100%] Built target odometry

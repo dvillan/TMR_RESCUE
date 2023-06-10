@@ -1,0 +1,1 @@
+/home/nvidia/Downloads/my_ws/devel/.private/hector_nav_msgs/lib/pkgconfig/hector_nav_msgs.pc

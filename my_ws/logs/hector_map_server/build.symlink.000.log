@@ -1,0 +1,4 @@
+Symlinking /home/nvidia/Downloads/my_ws/devel/lib/pkgconfig/hector_map_server.pc
+Symlinking /home/nvidia/Downloads/my_ws/devel/lib/hector_map_server/hector_map_server
+Symlinking /home/nvidia/Downloads/my_ws/devel/share/hector_map_server/cmake/hector_map_serverConfig-version.cmake
+Symlinking /home/nvidia/Downloads/my_ws/devel/share/hector_map_server/cmake/hector_map_serverConfig.cmake

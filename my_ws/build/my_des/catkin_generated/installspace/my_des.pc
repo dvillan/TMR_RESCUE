@@ -1,0 +1,8 @@
+prefix=/home/nvidia/Downloads/my_ws/install
+
+Name: my_des
+Description: Description of my_des
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

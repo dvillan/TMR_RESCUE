@@ -1,0 +1,8 @@
+prefix=/home/nvidia/Downloads/my_ws/devel/.private/urdf_v6
+
+Name: urdf_v6
+Description: Description of urdf_v6
+Version: 1.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

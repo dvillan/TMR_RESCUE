@@ -1,0 +1,4 @@
+Symlinking /home/nvidia/Downloads/my_ws/devel/lib/pkgconfig/my_des.pc
+Symlinking /home/nvidia/Downloads/my_ws/devel/lib/my_des/odometry
+Symlinking /home/nvidia/Downloads/my_ws/devel/share/my_des/cmake/my_desConfig-version.cmake
+Symlinking /home/nvidia/Downloads/my_ws/devel/share/my_des/cmake/my_desConfig.cmake

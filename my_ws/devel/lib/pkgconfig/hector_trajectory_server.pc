@@ -1,0 +1,1 @@
+/home/nvidia/Downloads/my_ws/devel/.private/hector_trajectory_server/lib/pkgconfig/hector_trajectory_server.pc

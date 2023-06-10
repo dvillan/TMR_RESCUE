@@ -1,0 +1,4 @@
+Symlinking /home/nvidia/Downloads/my_ws/devel/lib/libhector_geotiff_plugins.so
+Symlinking /home/nvidia/Downloads/my_ws/devel/lib/pkgconfig/hector_geotiff_plugins.pc
+Symlinking /home/nvidia/Downloads/my_ws/devel/share/hector_geotiff_plugins/cmake/hector_geotiff_pluginsConfig.cmake
+Symlinking /home/nvidia/Downloads/my_ws/devel/share/hector_geotiff_plugins/cmake/hector_geotiff_pluginsConfig-version.cmake
