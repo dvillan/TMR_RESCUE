@@ -1,14 +1,26 @@
+#include <Wire.h>
 #include <Servo.h>
 Servo myservoBS4;
 Servo myservoBS3;
 Servo myservoBS2;
 Servo myservoBS1;
 
+Servo myservo;
+Servo myservoB;
+
+
+//Definición de pines para servos Pan-Tilt
+int servoV = 10;//PAN
+int servoH = 13;//TILT
+
+
+const byte direccion = 0x05;
+
 //Definición de pines Receptor
-#define CH1 53//A8
-#define CH2 51//A9
-#define CH3 49//A10
-#define CH4 47//A11
+#define CH1 A8//A8 -- 53
+#define CH2 A9//A9 -- 51
+#define CH3 A10//A10 -- 49
+#define CH4 A11//A11 -- 47
 #define CH5 A12//A12
 
 //Definiciones de pines PWM Brushless
@@ -34,10 +46,42 @@ int pinBreakFR = 37;//A0 Motor 1
 int pinBreakFL = 33;//A2 Motor 2
 int pinBreakBL = 29;//A4 Motor 3
 int pinBreakBR = 25; //A6 Motor 4
+/*
+  //Definición de pines para servos Pan-Tilt
+  int servoH = 10;//PAN
+  int servoV = 11;//TILT*/
 
 int Incremento = 5;
 int deltaAngulo = 5;
+/*
+  //Definición 90° dirección servos
+  int AngleValueBS4 = 1680;
+  int AngleValueBS3 = 1470;
+  int AngleValueBS2 = 1700;
+  int AngleValueBS1 = 1550;*/
 
+//Set 0° y 180°
+double AngleMinBS4 = 1500;
+double AngleMaxBS4 = 1900;
+double AngleMinBS3 = 1350;//1400
+double AngleMaxBS3 = 1700;//1775
+double AngleMinBS2 = 1135;
+double AngleMaxBS2 = 1735;
+double AngleMinBS1 = 1500;
+double AngleMaxBS1 = 1850;
+
+double theta1 = 180 / (AngleMaxBS1 - AngleMinBS1);
+double theta2 = 180 / (AngleMaxBS2 - AngleMinBS2);
+double theta3 = 180 / (AngleMaxBS3 - AngleMinBS3);
+double theta4 = 180 / (AngleMaxBS4 - AngleMinBS4);
+
+int AngleValue = 0;
+int AngleValueB = 0;
+
+int desiredAngleValue = 0;
+int desiredAngleValueB = 0;
+int desiredAngleValue_reverse = 0;
+int desiredAngleValueB_reverse = 0;
 
 int ch1Value, ch2Value, ch3Value, ch4Value;
 bool ch5Value;
@@ -59,10 +103,10 @@ bool redSwitch(byte channelInput, bool defaultValue) {
 
 int pwmValue = 0;
 
-int AngleValueBS4 = 1680;
-int AngleValueBS3 = 1550;
-int AngleValueBS2 = 1475;
-int AngleValueBS1 = 1675;
+double AngleValueBS4 = 1680;
+double AngleValueBS3 = 1475;//1550
+double AngleValueBS2 = 1475;
+double AngleValueBS1 = 1675;
 
 int desiredBS4Angle = 0;
 int desiredBS3Angle = 0;
@@ -71,6 +115,12 @@ int desiredBS1Angle = 0;
 
 int desiredValue = 0;
 int desiredValue_reverse = 0;
+
+//Remap ángulos
+int AngleValueBS1_new = 0;
+int AngleValueBS2_new = 0;
+int AngleValueBS3_new = 0;
+int AngleValueBS4_new = 0;
 
 bool RightJoystickHorizontal = false;
 bool RightJoystickVertical = false;
@@ -82,6 +132,7 @@ const long interval = 100;
 
 void setup() {
   Serial.begin(115200);
+  Wire.begin();
   myservoBS4.attach(BS4, 1000, 2000);
   myservoBS3.attach(BS3, 1000, 2000);
   myservoBS2.attach(BS2, 1000, 2000);
@@ -98,27 +149,134 @@ void setup() {
   pinMode(pinBreakFL, OUTPUT);
   pinMode(pinBreakBR, OUTPUT);
   pinMode(pinBreakBL, OUTPUT);
+  pinMode(CH1, INPUT);
   pinMode(CH2, INPUT);
+  pinMode(CH3, INPUT);
   pinMode(CH4, INPUT);
+  myservo.attach(servoV);//PAN
+  myservoB.attach(servoH);//TILT
   delay(6000);
 }
 
 void loop() {
   ch2Value = readChannel(CH2, -100, 100, -100);//Izquierda horizontal
   ch4Value = readChannel(CH4, -100, 100, 0);//Derecha vertical
+  ch1Value = readChannel(CH1, -100, 100, 0);
+  ch3Value = readChannel(CH3, -100, 100, 0);
 
   desiredValue_reverse = map(ch2Value, 10, 100, 0, 125);
   desiredValue = map(ch2Value, -10, -100, 0, 100);
-  desiredBS4Angle = map(ch4Value, -100, 100, 1500, 1900);//1200 --> 0° , 1750 --> 180°, 1680 --> 90°
-  desiredBS3Angle = map(ch4Value, -100, 100, 1400, 1775);//1310 --> 0° , 2000 --> 180°, 1550 --> 90°
-  desiredBS2Angle = map(ch4Value, -100, 100, 1135, 1735);//1300 --> 0° , 1700 --> 180°, 1475 --> 90°
-  desiredBS1Angle = map(ch4Value, -100, 100, 1500, 1850);//1230 --> 0° , 1830 --> 180°, 1675 --> 90°
-  Set 90°
-  AngleValueBS2 = 1670;//Atrás der
+  desiredBS4Angle = map(ch4Value, -100, 100, 1500, 1900);//1500 --> 0° , 1900 --> 180°, 1680 --> 90°
+  desiredBS3Angle = map(ch4Value, -100, 100, 1350, 1700);//1400 --> 0° , 1775 --> 180°, 1550 --> 90°
+  desiredBS2Angle = map(ch4Value, -100, 100, 1135, 1735);//1135 --> 0° , 1735 --> 180°, 1475 --> 90°
+  desiredBS1Angle = map(ch4Value, -100, 100, 1500, 1850);//1500 --> 0° , 1850 --> 180°, 1675 --> 90°
+
+  desiredAngleValue = map(ch1Value, 10, 100, 90, 120); //Der
+  desiredAngleValue_reverse = map(ch1Value, -10, -100, 90, 60);
+  desiredAngleValueB = map(ch3Value, 10, 100, 90, 120); //Izq3
+  desiredAngleValueB_reverse = map(ch3Value, -10, -100, 90, 0);//90, 45
+
+
+  //Set 90°
+  AngleValueBS2 = 1475;//Atrás der
   myservoBS2.writeMicroseconds(AngleValueBS2);
 
-  AngleValueBS1 = 1460;//Atrás izq
+  AngleValueBS1 = 1675;//Atrás izq
   myservoBS1.writeMicroseconds(AngleValueBS1);
+  /*
+    //Motor Adelante izq
+    if (ch4Value > 20) {
+      LeftJoystickVertical = true;
+      if (AngleValueBS2 < desiredBS2Angle) {
+        if (AngleValueBS2 < 1275) {
+          AngleValueBS2 = 1275;
+        }
+        else {
+          AngleValueBS2 -= 10;
+        }
+        myservoBS2.writeMicroseconds(AngleValueBS2);
+        Serial.println(AngleValueBS2);
+        Serial.println(ch4Value);
+        delay(10);
+
+      }
+    }
+    else if (ch4Value < -20) {
+      LeftJoystickVertical = true;
+      if (AngleValueBS2 > desiredBS2Angle) {
+        if (AngleValueBS2 > 1680) {
+          AngleValueBS2 = 1680;
+        }
+        else {
+          AngleValueBS2 += 10;
+        }
+        myservoBS2.writeMicroseconds(AngleValueBS2);
+        Serial.println(AngleValueBS2);
+        Serial.println(ch4Value);
+        delay(10);
+      }
+    }
+    else {
+      LeftJoystickVertical = false;
+      if (AngleValueBS2 > 1475) {
+        AngleValueBS2 -= 20;
+      }
+      else if (AngleValueBS2 < 1475) {
+        AngleValueBS2 += 20;
+      }
+      else {
+        AngleValueBS2 = 1475;
+      }
+      delay(10);
+      myservoBS2.writeMicroseconds(AngleValueBS2);
+      //  Serial.println(AngleValueBS2);
+    }
+
+    //Motor Adelante der
+    if (ch4Value > 20) {
+      LeftJoystickVertical = true;
+      if (AngleValueBS1 < desiredBS2Angle) {
+        if (AngleValueBS1 < 1500) {
+          AngleValueBS1 = 1500;
+        }
+        else {
+          AngleValueBS1 -= 10;
+        }
+        myservoBS1.writeMicroseconds(AngleValueBS1);
+        // Serial.println(AngleValueBS1);
+        delay(10);
+      }
+    }
+    else if (ch4Value < -20) {
+      LeftJoystickVertical = true;
+      if (AngleValueBS1 > desiredBS2Angle) {
+        if (AngleValueBS1 > 1850) {
+          AngleValueBS1 = 1850;
+        }
+        else {
+          AngleValueBS1 += 10;
+        }
+        myservoBS1.writeMicroseconds(AngleValueBS1);
+        // Serial.println(AngleValueBS1);
+        delay(10);
+      }
+    }
+    else {
+      LeftJoystickVertical = false;
+      if (AngleValueBS1 > 1675) {
+        AngleValueBS1 -= 20;
+      }
+      else if (AngleValueBS1 < 1675) {
+        AngleValueBS1 += 20;
+      }
+      else {
+        AngleValueBS1 = 1675;
+      }
+      delay(10);
+      myservoBS1.writeMicroseconds(AngleValueBS1);
+      // Serial.println(AngleValueBS1);
+    }*/
+
 
   //Motor Atras izq
   if (ch4Value > 20) {
@@ -176,18 +334,102 @@ void loop() {
   }
   else {
     LeftJoystickVertical = false;
-    if (AngleValueBS3 > 1550) {
+    if (AngleValueBS3 > 1475) {
       AngleValueBS3 -= 20;
     }
-    else if (AngleValueBS3 < 1550) {
+    else if (AngleValueBS3 < 1475) {
       AngleValueBS3 += 20;
     }
     else {
-      AngleValueBS3 = 1550;
+      AngleValueBS3 = 1475;
     }
     delay(10);
     myservoBS3.writeMicroseconds(AngleValueBS3);
     //Serial.println(AngleValueBS3);
+  }
+
+
+  //Control camara Tilt
+  int maxAngleB = 90;//150
+  int minAngleB = 30;//30
+  if (ch3Value == 0) {
+    AngleValueB = 60;
+    myservoB.write(AngleValueB);
+  }
+
+  else {
+    //Control PAN
+    if (ch3Value > -15) {
+      LeftJoystickVertical = true;
+      //if (AngleValue < desiredAngleValue) {
+      if (AngleValueB >= maxAngleB) {
+        AngleValueB = maxAngleB;
+      }
+      else {
+        AngleValueB += 2;
+      }
+      myservoB.write(AngleValueB);
+      delay(100);
+      //}
+    }
+    else if (ch3Value < -30) {
+      LeftJoystickVertical = true;
+      //if (AngleValue > desiredAngleValue_reverse) {
+      if (AngleValueB <= minAngleB) {
+        AngleValueB = minAngleB;
+      }
+      else {
+        AngleValueB -= 2;
+      }
+      myservoB.write(AngleValueB);
+      //Serial.print("Angle Value ");
+      //Serial.println(AngleValue);
+      //Serial.println("MOVING CAMERA PAN");
+      delay(100);
+      //}
+    }
+  }
+  delay(10);
+
+  //Control PAN
+  int maxAngle = 90;//150
+  int minAngle = 20;//30
+
+  if (ch1Value == 0) {
+    AngleValue = 40;
+    myservo.write(AngleValue);
+  }
+  else {
+    //Control PAN
+    if (ch1Value > -15) {
+      LeftJoystickHorizontal = true;
+      //if (AngleValue < desiredAngleValue) {
+      if (AngleValue >= maxAngle) {
+        AngleValue = maxAngle;
+      }
+      else {
+        AngleValue += deltaAngulo;
+      }
+      myservo.write(AngleValue);
+      delay(100);
+      //}
+    }
+    else if (ch1Value < -30) {
+      LeftJoystickHorizontal = true;
+      //if (AngleValue > desiredAngleValue_reverse) {
+      if (AngleValue <= minAngle) {
+        AngleValue = minAngle;
+      }
+      else {
+        AngleValue -= deltaAngulo;
+      }
+      myservo.write(AngleValue);
+      //Serial.print("Angle Value ");
+      //Serial.println(AngleValue);
+      //Serial.println("MOVING CAMERA PAN");
+      delay(100);
+      //}
+    }
   }
 
   //pwmValue = 0;
